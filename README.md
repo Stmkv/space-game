@@ -40,8 +40,4 @@ space-game/
 │   └── frames/            # Текстовые фреймы корабля
 │       ├── starship_frame_1.txt
 │       └── starship_frame_2.txt
-│
-├── README.md              # Документация (этот файл)
-└── requirements.txt       # Список зависимостей
-
 ```
