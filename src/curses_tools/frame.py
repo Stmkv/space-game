@@ -17,7 +17,7 @@ def draw_frame(canvas, start_row, start_column, text, negative=False):
             if column >= columns_number:
                 break
 
-            if symbol == ' ':
+            if symbol == " ":
                 continue
 
             # Check that current position it is not in a lower right corner of the window
@@ -26,7 +26,7 @@ def draw_frame(canvas, start_row, start_column, text, negative=False):
             if row == rows_number - 1 and column == columns_number - 1:
                 continue
 
-            symbol = symbol if not negative else ' '
+            symbol = symbol if not negative else " "
             canvas.addch(row, column, symbol)
 
 

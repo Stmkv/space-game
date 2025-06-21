@@ -34,5 +34,3 @@ def read_controls(canvas):
             space_pressed = True
 
     return rows_direction, columns_direction, space_pressed
-
-

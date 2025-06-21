@@ -1,9 +1,9 @@
 import asyncio
+import curses
 import itertools
 import os.path
 import random
 import time
-import curses
 
 from animation import fire
 from curses_tools import draw_frame, get_frame_size, read_controls
@@ -15,7 +15,12 @@ TIC_TIMEOUT = 0.1
 FRAMES_DIR = os.path.join("src", "frames")
 
 
-async def blink(canvas, row, column, symbol="*"):
+async def blink(
+    canvas,
+    row: int,
+    column: int,
+    symbol: str = "*",
+) -> None:
     for _ in range(random.randint(0, STARS_COUNT)):
         await asyncio.sleep(0)
 
@@ -46,21 +51,32 @@ def get_frames() -> list[str]:
     return frames
 
 
-async def animate_spaceship(canvas, row, column, frames):
+async def animate_spaceship(
+    canvas: "curses.window",
+    row: int,
+    column: int,
+    frames: list[str],
+) -> None:
     prev_height, prev_width = row, column
     min_x, min_y = 1, 1
     max_x, max_y = canvas.getmaxyx()
     end_frame = None
-    frame_cycle =itertools.cycle(frames)
+    frame_cycle = itertools.cycle(frames)
 
     while True:
         for frame in frame_cycle:
             delta_row, delta_column, space = read_controls(canvas)
             frame_rows, frame_columns = get_frame_size(frame)
 
-            if  delta_column + frame_columns + prev_width> max_y - 1 or prev_width + delta_column + 1 < min_y + 1:
+            if (
+                delta_column + frame_columns + prev_width > max_y - 1
+                or prev_width + delta_column + 1 < min_y + 1
+            ):
                 delta_column = 0
-            if delta_row + frame_rows + prev_height> max_x - 1 or prev_height + delta_row + 1 < min_x + 1:
+            if (
+                delta_row + frame_rows + prev_height > max_x - 1
+                or prev_height + delta_row + 1 < min_x + 1
+            ):
                 delta_row = 0
 
             if end_frame:
@@ -76,7 +92,7 @@ async def animate_spaceship(canvas, row, column, frames):
                 await asyncio.sleep(0)
 
 
-def draw(canvas):
+def draw(canvas: "curses.window") -> None:
     curses.curs_set(False)
     canvas.nodelay(True)
     canvas.border()
