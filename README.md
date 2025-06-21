@@ -31,13 +31,13 @@
 space-game/
 │
 ├── src/
-│   ├── main.py            # Главный файл запуска
-│   ├── animation/         # Анимации 
-│   │   └── shot.py        # Анимация выстрела
-│   ├── curses_tools.py    # Вспомогательные функции для curses
-│   │   └── frame.py       # Работа с текстовыми фреймами
-│   │   └── key_control.py # Работа с клавиатурой
-│   └── frames/            # Текстовые фреймы корабля
-│       ├── starship_frame_1.txt
-│       └── starship_frame_2.txt
+   ├── main.py            # Главный файл запуска
+   ├── animation/         # Анимации 
+   │   └── shot.py        # Анимация выстрела
+   ├── curses_tools.py    # Вспомогательные функции для curses
+   │   └── frame.py       # Работа с текстовыми фреймами
+   │   └── key_control.py # Работа с клавиатурой
+   └── frames/            # Текстовые фреймы корабля
+       ├── starship_frame_1.txt
+       └── starship_frame_2.txt
 ```
