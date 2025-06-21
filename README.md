@@ -1,6 +1,6 @@
 # Игра "Spaceship in the Galaxy"
 
-![img.png](img.png)
+![img.png](README/img.png)
 
 ## Описание
 - На экране отображается "космическое небо" — случайно мигающие звезды.
