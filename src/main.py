@@ -16,12 +16,13 @@ FRAMES_DIR = os.path.join("src", "frames")
 
 
 async def blink(
-    canvas,
-    row: int,
-    column: int,
-    symbol: str = "*",
+        canvas,
+        row: int,
+        column: int,
+        offset_tics: int,
+        symbol: str = "*",
 ) -> None:
-    for _ in range(random.randint(0, STARS_COUNT)):
+    for _ in range(offset_tics):
         await asyncio.sleep(0)
 
     while True:
@@ -47,15 +48,17 @@ def get_frames() -> list[str]:
     frames = []
     for filename in frame_files:
         with open(filename, "r") as f:
-            frames.append(f.read())
+            frame = f.read()
+            frames.append(frame)
+            frames.append(frame)
     return frames
 
 
 async def animate_spaceship(
-    canvas: "curses.window",
-    row: int,
-    column: int,
-    frames: list[str],
+        canvas: "curses.window",
+        row: int,
+        column: int,
+        frames: list[str],
 ) -> None:
     prev_height, prev_width = row, column
     min_x, min_y = 1, 1
@@ -63,33 +66,31 @@ async def animate_spaceship(
     end_frame = None
     frame_cycle = itertools.cycle(frames)
 
-    while True:
-        for frame in frame_cycle:
-            delta_row, delta_column, space = read_controls(canvas)
-            frame_rows, frame_columns = get_frame_size(frame)
+    for frame in frame_cycle:
+        delta_row, delta_column, space = read_controls(canvas)
+        frame_rows, frame_columns = get_frame_size(frame)
 
-            if (
+        if (
                 delta_column + frame_columns + prev_width > max_y - 1
                 or prev_width + delta_column + 1 < min_y + 1
-            ):
-                delta_column = 0
-            if (
+        ):
+            delta_column = 0
+        if (
                 delta_row + frame_rows + prev_height > max_x - 1
                 or prev_height + delta_row + 1 < min_x + 1
-            ):
-                delta_row = 0
+        ):
+            delta_row = 0
 
-            if end_frame:
-                draw_frame(canvas, prev_height, prev_width, end_frame, negative=True)
+        if end_frame:
+            draw_frame(canvas, prev_height, prev_width, end_frame, negative=True)
 
-            prev_height = new_row = prev_height + delta_row
-            prev_width = new_column = prev_width + delta_column
-            draw_frame(canvas, new_row, new_column, frame)
+        prev_height = new_row = prev_height + delta_row
+        prev_width = new_column = prev_width + delta_column
+        draw_frame(canvas, new_row, new_column, frame)
 
-            end_frame = frame
+        end_frame = frame
 
-            for _ in range(2):
-                await asyncio.sleep(0)
+        await asyncio.sleep(0)
 
 
 def draw(canvas: "curses.window") -> None:
@@ -103,7 +104,7 @@ def draw(canvas: "curses.window") -> None:
         row = random.randint(1, max_height - 2)
         col = random.randint(1, max_width - 2)
         symbol = random.choice(STAR_SYMBOL)
-        corutines.append(blink(canvas, row, col, symbol))
+        corutines.append(blink(canvas, row, col, random.randint(0, STARS_COUNT), symbol))
 
     corutines.append(fire(canvas, max_height // 2, max_width // 2))
 
