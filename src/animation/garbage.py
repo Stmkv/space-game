@@ -1,8 +1,9 @@
-from src.curses_tools import draw_frame
+from curses_tools import draw_frame
 import asyncio
 
+
 async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
-    """Animate garbage, flying from top to bottom. Сolumn position will stay same, as specified on start."""
+    """Animate garbage, flying from top to bottom. Column position will stay same, as specified on start."""
     rows_number, columns_number = canvas.getmaxyx()
 
     column = max(column, 0)
