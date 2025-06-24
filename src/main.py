@@ -12,7 +12,8 @@ STAR_SYMBOL = "+*.:"
 STARS_COUNT = 100
 STARS_ROW, STARS_COLUMN = 5, 2
 TIC_TIMEOUT = 0.1
-FRAMES_DIR = os.path.join("src", "frames")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STARSHIP_FRAMES_DIR = os.path.join(BASE_DIR, "frames", "starship")
 
 
 async def blink(
@@ -44,7 +45,7 @@ async def blink(
 
 
 def get_frames() -> list[str]:
-    frame_files = [os.path.join(FRAMES_DIR, f) for f in os.listdir(FRAMES_DIR)]
+    frame_files = [os.path.join(STARSHIP_FRAMES_DIR, f) for f in os.listdir(STARSHIP_FRAMES_DIR)]
     frames = []
     for filename in frame_files:
         with open(filename, "r") as f:
