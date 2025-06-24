@@ -1,6 +1,10 @@
 # Игра "Spaceship in the Galaxy"
 
-[геймплэй.mp4](README/%D0%B3%D0%B5%D0%B9%D0%BC%D0%BF%D0%BB%D1%8D%D0%B9.mp4)
+
+
+https://github.com/user-attachments/assets/bd739284-7251-4567-9de8-bb68d2f7b741
+
+
 
 ## Описание
 - На экране отображается "космическое небо" — случайно мигающие звезды.
