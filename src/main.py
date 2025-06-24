@@ -5,7 +5,7 @@ import os.path
 import random
 import time
 
-from animation import fire, fly_garbage
+from animation import fire
 from curses_tools import (
     draw_frame,
     get_frame_size,
@@ -13,10 +13,13 @@ from curses_tools import (
     get_frames,
     sleep,
     update_speed,
+    show_obstacles,
+    Obstacle,
 )
 
 SPACESHIP_FRAME = ""
 COROUTINES = []
+OBSTACLES = []
 STAR_SYMBOL = "+*.:"
 STARS_COUNT = 100
 STARS_ROW, STARS_COLUMN = 5, 2
@@ -27,11 +30,11 @@ GARBAGE_FRAMES_DIR = os.path.join(BASE_DIR, "frames", "garbage")
 
 
 async def blink(
-    canvas,
-    row: int,
-    column: int,
-    offset_tics: int,
-    symbol: str = "*",
+        canvas,
+        row: int,
+        column: int,
+        offset_tics: int,
+        symbol: str = "*",
 ) -> None:
     await sleep(offset_tics)
 
@@ -48,6 +51,28 @@ async def blink(
         canvas.addstr(row, column, symbol)
         await sleep(3)
 
+
+async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
+    """Animate garbage, flying from top to bottom. Column position will stay same, as specified on start."""
+    global OBSTACLES
+    rows_number, columns_number = canvas.getmaxyx()
+
+    column = max(column, 0)
+    column = min(column, columns_number - 1)
+
+    row = 0
+    obstacle_row_size, obstacle_column_size = get_frame_size(garbage_frame)
+    garbage_obstacle_frame = Obstacle(row, column, obstacle_row_size, obstacle_column_size)
+    OBSTACLES.append(garbage_obstacle_frame)
+    await sleep(1)
+    while row < rows_number:
+        draw_frame(canvas, row, column, garbage_frame)
+        await asyncio.sleep(0)
+        draw_frame(canvas, row, column, garbage_frame, negative=True)
+        row += speed
+        garbage_obstacle_frame.row += speed
+
+
 async def animate_spaceship(rocket_frames):
     global SPACESHIP_FRAME
 
@@ -57,10 +82,10 @@ async def animate_spaceship(rocket_frames):
 
 
 async def control_spaceship(
-    canvas: "curses.window",
-    row: int,
-    column: int,
-    frames: list[str],
+        canvas: "curses.window",
+        row: int,
+        column: int,
+        frames: list[str],
 ) -> None:
     # Крайние точки карты
     min_x, min_y = 1, 1
@@ -75,12 +100,20 @@ async def control_spaceship(
     height_speed = 0
 
     for frame in frame_cycle:
-        delta_row, delta_column, space = read_controls(canvas)
+        delta_row, delta_column, space_pressed = read_controls(canvas)
         frame_rows, frame_columns = get_frame_size(frame)
 
-        weight_speed, height_speed = update_speed(weight_speed, height_speed, delta_row, delta_column)
+        if space_pressed:
+            COROUTINES.append(fire(canvas, row - 1, column + 2))
 
-        if column + delta_column + frame_columns > max_y or column + delta_column + 1 < min_y + 1:
+        weight_speed, height_speed = update_speed(
+            weight_speed, height_speed, delta_row, delta_column
+        )
+
+        if (
+                column + delta_column + frame_columns > max_y
+                or column + delta_column + 1 < min_y + 1
+        ):
             height_speed = 0
         if row + delta_row + frame_rows > max_x or row + delta_row + 1 < min_x + 1:
             weight_speed = 0
@@ -122,8 +155,6 @@ def draw(canvas: "curses.window") -> None:
             blink(canvas, row, col, random.randint(0, STARS_COUNT), symbol)
         )
 
-    COROUTINES.append(fire(canvas, max_height // 2, max_width // 2))
-
     starship_frames = get_frames(STARSHIP_FRAMES_DIR, repeat=2)
     garbage_frames = get_frames(GARBAGE_FRAMES_DIR)
 
@@ -132,6 +163,7 @@ def draw(canvas: "curses.window") -> None:
     )
     COROUTINES.append(fill_orbit_with_garbage(canvas, garbage_frames))
     COROUTINES.append(animate_spaceship(starship_frames))
+    COROUTINES.append(show_obstacles(canvas, OBSTACLES))
 
     while True:
         for corutine in COROUTINES.copy():
