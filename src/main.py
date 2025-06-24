@@ -62,12 +62,15 @@ async def control_spaceship(
     column: int,
     frames: list[str],
 ) -> None:
-    prev_height, prev_width = row, column
+    # Крайние точки карты
     min_x, min_y = 1, 1
     max_x, max_y = canvas.getmaxyx()
+
     global SPACESHIP_FRAME
     end_frame = SPACESHIP_FRAME
+
     frame_cycle = itertools.cycle(frames)
+    # Начальная скорость корабля
     weight_speed = 0
     height_speed = 0
 
@@ -77,25 +80,18 @@ async def control_spaceship(
 
         weight_speed, height_speed = update_speed(weight_speed, height_speed, delta_row, delta_column)
 
-        if (
-            delta_column + frame_columns + prev_width > max_y - 1
-            or prev_width + delta_column + 1 < min_y + 1
-        ):
-            delta_column = 0
-        if (
-            delta_row + frame_rows + prev_height > max_x - 1
-            or prev_height + delta_row + 1 < min_x + 1
-        ):
-            delta_row = 0
-
+        if column + delta_column + frame_columns > max_y or column + delta_column + 1 < min_y + 1:
+            height_speed = 0
+        if row + delta_row + frame_rows > max_x or row + delta_row + 1 < min_x + 1:
+            weight_speed = 0
         if end_frame:
-            draw_frame(canvas, prev_height, prev_width, end_frame, negative=True)
+            draw_frame(canvas, row, column, end_frame, negative=True)
 
-        prev_height = new_row = prev_height + delta_row
-        prev_width = new_column = prev_width + delta_column
-        draw_frame(canvas, new_row, new_column, frame)
+        row += weight_speed
+        column += height_speed
+        draw_frame(canvas, row, column, SPACESHIP_FRAME)
 
-        end_frame = frame
+        end_frame = SPACESHIP_FRAME
 
         await asyncio.sleep(0)
 
