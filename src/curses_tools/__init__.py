@@ -5,6 +5,7 @@ all = (
     "get_frames",
     "sleep",
     "update_speed",
+    "explode",
 )
 
 from .frame import draw_frame, get_frame_size, get_frames
@@ -12,3 +13,4 @@ from .key_control import read_controls
 from .animation import sleep
 from .physics import update_speed
 from .obstacles import show_obstacles, Obstacle
+from .explosion import explode

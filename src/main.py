@@ -5,7 +5,6 @@ import os.path
 import random
 import time
 
-from animation import fire
 from curses_tools import (
     draw_frame,
     get_frame_size,
@@ -15,8 +14,10 @@ from curses_tools import (
     update_speed,
     show_obstacles,
     Obstacle,
+    explode
 )
 
+OBSTACLES_IN_LAST_COLLISION = []
 SPACESHIP_FRAME = ""
 COROUTINES = []
 OBSTACLES = []
@@ -52,8 +53,8 @@ async def blink(
         await sleep(3)
 
 
-async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
-    """Animate garbage, flying from top to bottom. Column position will stay same, as specified on start."""
+async def fly_garbage(canvas, column, garbage_frame, speed=1):
+    """Animate garbage, flying from top to bottom. Сolumn position will stay same, as specified on start."""
     global OBSTACLES
     rows_number, columns_number = canvas.getmaxyx()
 
@@ -61,9 +62,11 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
     column = min(column, columns_number - 1)
 
     row = 0
+
     obstacle_row_size, obstacle_column_size = get_frame_size(garbage_frame)
     garbage_obstacle_frame = Obstacle(row, column, obstacle_row_size, obstacle_column_size)
     OBSTACLES.append(garbage_obstacle_frame)
+
     await sleep(1)
     while row < rows_number:
         draw_frame(canvas, row, column, garbage_frame)
@@ -72,6 +75,12 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
         row += speed
         garbage_obstacle_frame.row += speed
 
+        for obstacle in OBSTACLES_IN_LAST_COLLISION:
+            if garbage_obstacle_frame is obstacle:
+                OBSTACLES.remove(garbage_obstacle_frame)
+                await explode(canvas, row, column)
+                return
+
 
 async def animate_spaceship(rocket_frames):
     global SPACESHIP_FRAME
@@ -79,6 +88,42 @@ async def animate_spaceship(rocket_frames):
     for frame in itertools.cycle(rocket_frames):
         SPACESHIP_FRAME = frame
         await sleep(2)
+
+
+async def fire(canvas, start_row, start_column, rows_speed=-1, columns_speed=0):
+    """Display animation of gun shot. Direction and speed can be specified."""
+
+    row, column = start_row, start_column
+
+    canvas.addstr(round(row), round(column), '*')
+    await asyncio.sleep(0)
+
+    canvas.addstr(round(row), round(column), 'O')
+    await asyncio.sleep(0)
+    canvas.addstr(round(row), round(column), ' ')
+
+    row += rows_speed
+    column += columns_speed
+
+    symbol = '-' if columns_speed else '|'
+
+    rows, columns = canvas.getmaxyx()
+    max_row, max_column = rows - 1, columns - 1
+
+    curses.beep()
+
+    while 0 < row < max_row and 0 < column < max_column:
+        canvas.addstr(round(row), round(column), symbol)
+        await asyncio.sleep(0)
+        canvas.addstr(round(row), round(column), ' ')
+        row += rows_speed
+        column += columns_speed
+
+        for obstacle in OBSTACLES:
+            obj_corner = row, column
+            if obstacle.has_collision(*obj_corner):
+                OBSTACLES_IN_LAST_COLLISION.append(obstacle)
+                return None
 
 
 async def control_spaceship(
